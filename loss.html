@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Loss Sheet</title>
+<style>
+    body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #bb8989, #9e5f5f);
+        margin: 0;
+        padding: 30px;
+        color: rgb(27, 20, 20);
+    }
+    h2 { text-align: center; margin-bottom: 20px; font-size: 32px; }
+    .container {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 15px;
+        max-width: 900px;
+        margin: auto;
+        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+    }
+    #addRow {
+        background: #137c3b; color: rgb(0, 0, 0);
+        padding: 10px 20px; border: none; border-radius: 8px;
+        font-size: 16px; cursor: pointer; margin-bottom: 15px; transition: 0.3s; font-weight: bold;
+    }
+    #addRow:hover { background: #fffffe; transform: scale(1.05);}
+    table { width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.2); border-radius: 10px; overflow: hidden; }
+    th { background: rgba(0,0,0,0.3); padding: 12px; font-size: 18px; text-transform: uppercase; }
+    td { padding: 10px; backdrop-filter: blur(8px); }
+    tr:hover { background: rgba(19, 13, 13, 0.1); transition: 0.3s; }
+    input { width: 90%; padding: 8px; border-radius: 6px; border: none; outline: none; font-size: 15px; }
+    .deleteBtn { background: #c41212; border: none; color: rgb(235, 227, 227); padding: 8px 12px; border-radius: 6px; font-size: 15px; cursor: pointer; transition: 0.2s; }
+    .deleteBtn:hover { background: #a32121; transform: scale(1.05); }
+    .total-box { margin-top: 30px; font-size: 24px; font-weight: 700; text-align: right; }
+</style>
+</head>
+<body>
+
+<h2>📉 Loss Sheet</h2>
+
+<div class="container">
+    <button id="addRow">+ Add Loss Entry</button>
+
+    <table id="ledgerTable">
+        <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Expense (৳)</th>
+            <th>Action</th>
+        </tr>
+    </table>
+
+    <div class="total-box">
+        Total Loss: ৳ <span id="totalAmount">0</span>
+    </div>
+</div>
+
+<script>
+    let table = document.getElementById("ledgerTable");
+    let totalAmount = document.getElementById("totalAmount");
+
+    function saveData() {
+        let data = [];
+        for (let i = 1; i < table.rows.length; i++) {
+            let r = table.rows[i];
+            data.push({
+                date: r.cells[0].children[0].value,
+                desc: r.cells[1].children[0].value,
+                expense: r.cells[2].children[0].value
+            });
+        }
+        localStorage.setItem("lossData", JSON.stringify(data));
+        calculateTotal();
+    }
+
+    function loadData() {
+        let saved = JSON.parse(localStorage.getItem("lossData") || "[]");
+        saved.forEach(row => addRow(row.date, row.desc, row.expense));
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        for (let i = 1; i < table.rows.length; i++) {
+            let val = parseFloat(table.rows[i].cells[2].children[0].value) || 0;
+            total += val;
+        }
+        totalAmount.innerText = total;
+    }
+
+    function addRow(date="", desc="", expense="") {
+        let row = table.insertRow();
+        row.innerHTML = `
+            <td><input type="date" value="${date}" onchange="saveData()"></td>
+            <td><input type="text" placeholder="Details..." value="${desc}" onchange="saveData()"></td>
+            <td><input type="number" value="${expense}" onchange="saveData()"></td>
+            <td><button class="deleteBtn" onclick="deleteRow(this)">Delete</button></td>
+        `;
+        saveData();
+    }
+
+    function deleteRow(btn) {
+        btn.parentElement.parentElement.remove();
+        saveData();
+    }
+
+    document.getElementById("addRow").onclick = () => addRow();
+    loadData();
+</script>
+
+</body>
+</html>
